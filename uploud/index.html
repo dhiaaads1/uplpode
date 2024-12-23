@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload and Share Your File</title>
+    <title>File Upload and Share</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-storage.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -16,6 +18,7 @@
             height: 100vh;
             color: #333;
         }
+
         .container {
             text-align: center;
             background: rgba(255, 255, 255, 0.9);
@@ -25,9 +28,17 @@
             max-width: 400px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #444;
+        }
+
         input[type="file"] {
             display: none;
         }
+
         label {
             background-color: #ff7b54;
             color: white;
@@ -35,15 +46,21 @@
             border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s;
         }
+
         label:hover {
             background-color: #ff9770;
+            transform: translateY(-3px);
         }
+
         .file-info {
             margin-top: 15px;
             font-size: 1rem;
             color: #555;
+            opacity: 0.85;
         }
+
         .share-btn {
             display: inline-block;
             margin-top: 20px;
@@ -53,7 +70,15 @@
             border-radius: 30px;
             color: white;
             cursor: pointer;
+            font-size: 1rem;
             text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .share-btn:hover {
+            background-color: #ff8787;
+            transform: translateY(-3px);
         }
     </style>
 </head>
@@ -64,59 +89,70 @@
             <label for="fileInput">Choose a File</label>
             <input type="file" id="fileInput" name="file" />
             <div id="fileInfo" class="file-info">No file selected</div>
-            <button id="uploadButton" class="share-btn" type="button" style="display: none;">Upload File</button>
-            <a id="shareLink" class="share-btn" href="#" target="_blank" style="display: none;">Download Link</a>
+            <button id="uploadFile" class="share-btn" type="button" style="display: none;">Upload and Generate Link</button>
         </form>
     </div>
 
     <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmp62Tkl-CsBYHzkVc0fJiEoyqhz1E2Mk",
+            authDomain: "dhiaa-459fb.firebaseapp.com",
+            projectId: "dhiaa-459fb",
+            storageBucket: "dhiaa-459fb.appspot.com",
+            messagingSenderId: "211950505062",
+            appId: "1:211950505062:web:418591af7461975fb731a7",
+            measurementId: "G-Y2D0NXJZJ4"
+        };
+
+        // Initialize Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-storage.js";
+
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
-        const uploadButton = document.getElementById('uploadButton');
-        const shareLink = document.getElementById('shareLink');
-
-        // Firebase configuration (replace with your Firebase project details)
-        const firebaseConfig = {
-    apiKey: "AIzaSyBmp62Tkl-CsBYHzkVc0fJiEoyqhz1E2Mk",
-    authDomain: "dhiaa-459fb.firebaseapp.com",
-    projectId: "dhiaa-459fb",
-    storageBucket: "dhiaa-459fb.firebasestorage.app",
-    messagingSenderId: "211950505062",
-    appId: "1:211950505062:web:418591af7461975fb731a7",
-    measurementId: "G-Y2D0NXJZJ4"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
+        const uploadFile = document.getElementById('uploadFile');
 
         fileInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 fileInfo.textContent = `Selected File: ${file.name}`;
-                uploadButton.style.display = 'inline-block';
+                uploadFile.style.display = 'inline-block';
             } else {
                 fileInfo.textContent = 'No file selected';
-                uploadButton.style.display = 'none';
+                uploadFile.style.display = 'none';
             }
         });
 
-        uploadButton.addEventListener('click', () => {
+        uploadFile.addEventListener('click', () => {
             const file = fileInput.files[0];
-            if (file) {
-                const storageRef = storage.ref(`uploads/${file.name}`);
-                storageRef.put(file).then((snapshot) => {
-                    storageRef.getDownloadURL().then((url) => {
-                        shareLink.href = url;
-                        shareLink.textContent = 'Download Link';
-                        shareLink.style.display = 'inline-block';
-                        alert(`File uploaded successfully! Shareable link: ${url}`);
-                    });
-                });
+            if (!file) {
+                alert('No file selected');
+                return;
             }
+
+            const storageRef = ref(storage, `uploads/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    console.error('Upload failed:', error);
+                },
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        alert(`Your shareable link: ${downloadURL}`);
+                    });
+                }
+            );
         });
     </script>
-
-    <!-- Add Firebase scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js"></script>
 </body>
 </html>
