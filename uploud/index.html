@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Share</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle, #ffafbd, #ffc3a0);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: popUp 1s ease-in-out;
+        }
+
+        @keyframes popUp {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #444;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            background-color: #ff7b54;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        label:hover {
+            background-color: #ff9770;
+            transform: translateY(-3px);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #555;
+            opacity: 0.85;
+        }
+
+        .share-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #ff6363;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .share-btn:hover {
+            background-color: #ff8787;
+            transform: translateY(-3px);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload and Share Your File</h1>
+        <form id="uploadForm">
+            <label for="fileInput">Choose a File</label>
+            <input type="file" id="fileInput" name="file" />
+            <div id="fileInfo" class="file-info">No file selected</div>
+            <button id="generateLink" class="share-btn" type="button" style="display: none;">Generate Shareable Link</button>
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const generateLink = document.getElementById('generateLink');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                fileInfo.textContent = `Selected File: ${file.name}`;
+                generateLink.style.display = 'inline-block';
+            } else {
+                fileInfo.textContent = 'No file selected';
+                generateLink.style.display = 'none';
+            }
+        });
+
+        generateLink.addEventListener('click', () => {
+            if (fileInput.files[0]) {
+                const randomId = Math.random().toString(36).substring(2, 10);
+                const fakeLink = `https://yourdomain.com/share/${randomId}`;
+                alert(`Your shareable link: ${fakeLink}`);
+            }
+        });
+    </script>
+</body>
+</html>
